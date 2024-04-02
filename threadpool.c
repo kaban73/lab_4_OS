@@ -39,20 +39,56 @@ pthread_t bee[NUMBER_OF_THREADS];
 // returns 0 if successful or 1 otherwise, 
 int enqueue(task t) 
 {
+    pthread_mutex_lock(&lock); // блокриуем доступ к очереди перед добавлением
+
+    if ((tail + 1) % (QUEUE_SIZE + 1) == head) { // переполнение
+        pthread_mutex_unlock(&lock); // разблокировка мютекса  = ошибка
+        return 1;
+    }
+
+    // в конец
+    queue[tail] = t;
+    tail = (tail + 1) % (QUEUE_SIZE + 1);
+
+    pthread_mutex_unlock(&lock); // разблок
+
     return 0;
 }
 
 // remove a task from the queue
 task dequeue() 
 {
-    return worktodo;
+    pthread_mutex_lock(&lock); // блок
+
+    if (head == tail)
+    {
+        perror("Очередь пуста");
+    }
+
+    // получаем заадчу
+    task task = queue[head];
+    head = (head + 1) % (QUEUE_SIZE + 1);
+
+    pthread_mutex_unlock(&lock);
+    return task;
 }
 
 // the worker thread in the thread pool
 void *worker(void *param)
 {
-    // execute the task
-    execute(worktodo.function, worktodo.data);
+
+    while (TRUE) {
+        sem_wait(&taskCount);
+        pthread_mutex_lock(&lock);//??
+
+        worktodo = dequeue();
+
+        pthread_mutex_unlock(&lock);//??
+
+        if (worktodo.data != NULL && worktodo.function != NULL)
+            execute(worktodo.function, worktodo.data);
+
+    }
 
     pthread_exit(0);
 }
