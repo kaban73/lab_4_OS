@@ -13,9 +13,9 @@
 
 #define TRUE 1
 
-// this represents work that has to be 
+// this represents work that has to be
 // completed by a thread in the pool
-typedef struct 
+typedef struct
 {
     void (*function)(void *p);
     void *data;
@@ -36,8 +36,8 @@ int tail = 0;
 pthread_t bee[NUMBER_OF_THREADS];
 
 // insert a task into the queue
-// returns 0 if successful or 1 otherwise, 
-int enqueue(task t) 
+// returns 0 if successful or 1 otherwise,
+int enqueue(task t)
 {
     pthread_mutex_lock(&lock); // блокриуем доступ к очереди перед добавлением
 
@@ -56,7 +56,7 @@ int enqueue(task t)
 }
 
 // remove a task from the queue
-task dequeue() 
+task dequeue()
 {
     pthread_mutex_lock(&lock); // блок
 
@@ -79,11 +79,8 @@ void *worker(void *param)
 
     while (TRUE) {
         sem_wait(&taskCount);
-        pthread_mutex_lock(&lock);//??
 
         worktodo = dequeue();
-
-        pthread_mutex_unlock(&lock);//??
 
         if (worktodo.data != NULL && worktodo.function != NULL)
             execute(worktodo.function, worktodo.data);

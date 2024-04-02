@@ -27,13 +27,23 @@ int main(void)
     work.a = 5;
     work.b = 10;
 
+    struct data work2;
+    work2.a = 1;
+    work2.b = 3;
+
+    struct data work3;
+    work3.a = -2;
+    work3.b = 3;
+
     // initialize the thread pool
     pool_init();
 
     // submit the work to the queue
     pool_submit(&add,&work);
+    pool_submit(&add,&work2);
+    pool_submit(&add,&work3);
 
-    // may be helpful 
+    // may be helpful
     //sleep(3);
 
     pool_shutdown();
