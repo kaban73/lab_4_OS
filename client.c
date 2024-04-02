@@ -43,6 +43,15 @@ int main(void)
     pool_submit(&add,&work2);
     pool_submit(&add,&work3);
 
+    /*
+    for (int i = 0 ; i < 5; i++) {
+        work.a = i;
+        work.b = i + 1;
+        pool_submit(&add, &work);
+        sleep(1);
+    }
+     */
+
     // may be helpful
     //sleep(3);
 
