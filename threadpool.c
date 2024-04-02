@@ -22,11 +22,18 @@ typedef struct
 }
 task;
 
+// mutex and semaphore
+pthread_mutex_t lock;
+sem_t taskCount;
+
 // the work queue
 task worktodo;
+task queue[QUEUE_SIZE + 1];
+int head = 0;
+int tail = 0;
 
 // the worker bee
-pthread_t bee;
+pthread_t bee[NUMBER_OF_THREADS];
 
 // insert a task into the queue
 // returns 0 if successful or 1 otherwise, 
@@ -66,17 +73,29 @@ int pool_submit(void (*somefunction)(void *p), void *p)
     worktodo.function = somefunction;
     worktodo.data = p;
 
-    return 0;
+    int response = enqueue(worktodo);
+    if (!response)
+        sem_post(&taskCount);
+
+    return response;
 }
 
 // initialize the thread pool
 void pool_init(void)
 {
-    pthread_create(&bee,NULL,worker,NULL);
+    pthread_mutex_init(&lock, NULL);
+    sem_init(&taskCount, 0, 0);
+    for (int i = 0; i < NUMBER_OF_THREADS; i++)
+        pthread_create(&bee[i],NULL,worker,NULL);
 }
 
 // shutdown the thread pool
 void pool_shutdown(void)
 {
-    pthread_join(bee,NULL);
+    sem_destroy(&taskCount);
+    pthread_mutex_destroy(&lock);
+    for (int i = 0; i < NUMBER_OF_THREADS; i++) {
+        pthread_cancel(bee[i]);
+        pthread_join(bee[i],NULL);
+    }
 }
